@@ -324,13 +324,6 @@ class UNet2DConditionLoadersMixin:
         is_lora = all(("lora" in k or k.endswith(".alpha")) for k in state_dict.keys())
         is_custom_diffusion = any("custom_diffusion" in k for k in state_dict.keys())
 
-        for k in state_dict:
-            new_k = k.replace("lora_unet_", "")
-            new_k = new_k.replace("lora_te_", "")
-            if "lora" not in new_k:
-                pass
-                # print(new_k)
-
         if is_lora:
             is_new_lora_format = all(
                 key.startswith(self.unet_name) or key.startswith(self.text_encoder_name) for key in state_dict.keys()
@@ -1044,7 +1037,8 @@ class LoraLoaderMixin:
 
         # TODO(SAYAK) - the following mapping is needed whenever LoRAs are published
         # in original SGM format (this was also meant here: https://github.com/huggingface/diffusers/pull/4287#discussion_r1275044911)
-        if unet_config is not None:  # need better chec
+        # We need this only for SGM style checkpoints.
+        if unet_config is not None and any("lora_unet_" in k for k in state_dict) :  # need better chec
             # use unet config to remap block numbers
             state_dict = cls._map_sgm_blocks_to_diffusers(state_dict, unet_config)
 
